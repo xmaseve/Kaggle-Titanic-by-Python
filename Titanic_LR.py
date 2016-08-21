@@ -119,8 +119,24 @@ def sga(x, y, num_iters=500):
             h = sigmoid(np.sum(x[randindex] * theta))
             theta = theta + alpha * (y[randindex] - h) * x[randindex]
     return theta
-    
 
+#SGA with Regularization L2:    
+def sga(x, y, lamda, num_iters=500):
+    m, n = np.shape(x)
+    theta = np.ones(n)
+    for i in range(num_iters):
+        for j in range(n):
+        #for j in xrange(m):
+            alpha = 0.01 + 4 / (1+i+j)
+            randindex = int(np.random.uniform(0, m))
+            h = sigmoid(np.sum(x[randindex] * theta))
+            if j == 0:
+                theta[j] = theta[j] + alpha * ((y[randindex] - h) * x[randindex,0])
+            else:
+                theta[j] = theta[j] + alpha * ((y[randindex] - h) * x[randindex,j] + lamda * theta[j])
+    return theta
+    
+    
 #Generate predicted values
 def classify(x, theta):
     result = []
@@ -147,21 +163,6 @@ submission.to_csv('C:/Users/YI/Downloads/Titanic_submission.csv')
 
 
 
-##Decision Tree
-#calculate entropy
-def entropy(x):
-    m = len(x)
-    labelcounts = {}
-    for i in x:
-        label = i[-1]
-        if label not in labelcounts.keys():
-            labelcounts[label] = 0
-        labelcounts[label] += 1
-    entropy = 0
-    for key in labelcounts:
-        prob = float(labelcounts[key]) / m
-        entropy -= prob * np.log(prob, 2)
-    return entropy
     
 
     
