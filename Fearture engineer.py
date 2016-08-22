@@ -7,7 +7,7 @@ Created on Sun Aug 21 13:54:06 2016
 
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
+
 
 def combined_data():
     train = pd.read_csv('C:/Users/YI/Downloads/train.csv')
@@ -159,46 +159,7 @@ combine = scale_all_features(combine)
     
 traindata = combine.ix[0:890]
 testdata = combine.ix[891:]  
-  
-from sklearn.ensemble import ExtraTreesClassifier
-from sklearn.feature_selection import SelectFromModel
-clf = ExtraTreesClassifier(n_estimators=200)
-clf = clf.fit(traindata, label)
-
-features = pd.DataFrame()
-features['feature'] = traindata.columns
-features['importance'] = clf.feature_importances_
-features.sort(['importance'],ascending=False)
-
-model = SelectFromModel(clf, prefit=True)
-train_new = model.transform(traindata)
-train_new.shape
-
-test_new = model.transform(testdata)
-test_new.shape
-
-forest = RandomForestClassifier(max_features='sqrt')
-
-parameter_grid = {
-                 'max_depth' : [4,5,6,7,8],
-                 'n_estimators': [200,210,240,250],
-                 'criterion': ['gini','entropy']
-                 }
-
-cross_validation = StratifiedKFold(label, n_folds=5)
-
-grid_search = GridSearchCV(forest,
-                           param_grid=parameter_grid,
-                           cv=cross_validation)
-
-grid_search.fit(train_new, label)
-
-print('Best score: {}'.format(grid_search.best_score_))
-print('Best parameters: {}'.format(grid_search.best_params_))
-
-
-newtrain = traindata[['Fare','Age','Title_Mr','Sex','Pclass_3']]
-newtest = testdata[['Fare','Age','Title_Mr','Sex','Pclass_3']]
+ 
 
 def tolist(data):
     new = data.as_matrix()
@@ -214,44 +175,3 @@ x= tolist(traindata)
 test= tolist(testdata)
         
 
-##Logistic regression
-#sigmoid function
-def sigmoid(z):
-    return 1 / (1 + np.exp(-z)) 
-
-#SGA stochastic gradient ascend
-def sga(x, y, lamda, num_iters=500):
-    m, n = np.shape(x)
-    theta = np.ones(n)
-    for i in range(num_iters):
-        for j in range(n):
-        #for j in xrange(m):
-            alpha = 0.01 + 4 / (1+i+j)
-            randindex = int(np.random.uniform(0, m))
-            h = sigmoid(np.sum(x[randindex] * theta))
-            if j == 0:
-                theta[j] = theta[j] + alpha * ((y[randindex] - h) * x[randindex,0])
-            else:
-                theta[j] = theta[j] + alpha * ((y[randindex] - h) * x[randindex,j] + lamda * theta[j])
-    return theta
-    
-theta = sga(train_new, y, 0.5)
-
-#Generate predicted values
-def classify(x, theta):
-    result = []
-    m, n = np.shape(x)
-    for i in range(m):
-        prob = sigmoid(np.sum(x[i] * theta))
-        if prob >= 0.5:
-            result.append(1)
-        else:
-            result.append(0)
-    return result
-
-result = classify(test_new, theta)
-       
-presult=pd.DataFrame(result, columns=['Survived'])
-test = pd.read_csv('C:/Users/YI/Downloads/test.csv')
-presult['PassengerId'] = test['PassengerId']
-presult.to_csv('C:/Users/YI/Downloads/Titanic_submission_newLR.csv')    
